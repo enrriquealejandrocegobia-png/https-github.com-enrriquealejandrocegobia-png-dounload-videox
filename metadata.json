@@ -1,0 +1,6 @@
+{
+  "name": "Video Translator & Downloader",
+  "description": "Powerful utility to translate video content and extract download links, optimized for Android Chrome.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
