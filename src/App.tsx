@@ -10,7 +10,8 @@ import {
   Info,
   Youtube,
   Film,
-  Zap
+  Zap,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DownloadManager } from "@/src/components/DownloadManager";
+import { AnonymousChat } from "@/src/components/AnonymousChat";
 import { DownloadItem } from "@/src/types";
 
 interface TranslationResult {
@@ -35,6 +37,7 @@ interface ScanResult {
 }
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<'video' | 'chat'>('video');
   const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("Spanish");
   const [isLoading, setIsLoading] = useState(false);
@@ -105,6 +108,10 @@ export default function App() {
   const removeDownload = (id: string) => {
     setDownloads(prev => prev.filter(d => d.id !== id));
   };
+
+  if (activeTab === 'chat') {
+    return <AnonymousChat onBack={() => setActiveTab('video')} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-x-hidden pb-20">
@@ -326,21 +333,38 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Fixed Language Selector (Mobile Nav style) */}
+      {/* Fixed Navigation (Mobile Nav style) */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/80 backdrop-blur-xl border-t border-slate-900 z-50">
         <div className="flex justify-between items-center max-w-sm mx-auto">
-            <select 
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="bg-transparent text-sm font-bold text-amber-500 focus:outline-none"
-            >
-                <option value="Spanish">Español</option>
-                <option value="English">English</option>
-                <option value="German">Deutsch</option>
-                <option value="French">Français</option>
-                <option value="Portuguese">Português</option>
-            </select>
-            <div className="flex gap-4">
+            <div className="flex gap-6">
+                <Button 
+                    variant="ghost" 
+                    onClick={() => setActiveTab('video')}
+                    className={`flex flex-col gap-1 h-auto py-2 ${activeTab === 'video' ? 'text-amber-500' : 'text-slate-500'}`}
+                >
+                    <Film className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Utility</span>
+                </Button>
+                <Button 
+                    variant="ghost" 
+                    onClick={() => setActiveTab('chat')}
+                    className={`flex flex-col gap-1 h-auto py-2 ${activeTab === 'chat' ? 'text-blue-500' : 'text-slate-500'}`}
+                >
+                    <MessageSquare className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Chat</span>
+                </Button>
+            </div>
+            
+            <div className="flex items-center gap-4">
+                <select 
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className="bg-transparent text-[10px] font-bold text-slate-400 focus:outline-none"
+                >
+                    <option value="Spanish">ESP</option>
+                    <option value="English">ENG</option>
+                    <option value="German">DEU</option>
+                </select>
                 <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
                     <Info className="w-4 h-4 text-slate-500" />
                 </div>

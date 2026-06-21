@@ -4,6 +4,8 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import * as dotenv from "dotenv";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 dotenv.config();
 
@@ -18,9 +20,42 @@ const ai = new GoogleGenAI({
 
 async function startServer() {
   const app = express();
+  const httpServer = createServer(app);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: "*",
+    }
+  });
+
   const PORT = 3000;
 
   app.use(express.json());
+
+  // Socket.io Logic
+  io.on("connection", (socket) => {
+    console.log("A user connected:", socket.id);
+
+    socket.on("join-room", (roomId) => {
+      socket.join(roomId);
+      console.log(`User ${socket.id} joined room: ${roomId}`);
+      // Notify others in the room
+      socket.to(roomId).emit("user-joined", { userId: socket.id.substring(0, 5) });
+    });
+
+    socket.on("send-message", ({ roomId, message }) => {
+      // Broadcast message to everyone in the room including sender
+      io.to(roomId).emit("new-message", {
+        id: Math.random().toString(36).substring(7),
+        text: message,
+        senderId: socket.id.substring(0, 5), // Anonymous sender ID
+        timestamp: Date.now(),
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log("User disconnected:", socket.id);
+    });
+  });
 
   // API Route: Fetch Video Context and Translate
   app.post("/api/translate-video", async (req, res) => {
@@ -126,7 +161,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
